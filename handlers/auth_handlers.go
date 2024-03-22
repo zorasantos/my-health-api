@@ -1,25 +1,23 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/my-health/models"
-	"github.com/my-health/utils"
+	"github.com/zorasantos/my-health/db"
+	"github.com/zorasantos/my-health/models"
+	"github.com/zorasantos/my-health/utils"
 )
 
 func Login(c *gin.Context) {
 	var user models.User
 
 	if err := c.ShouldBindJSON(&user); err != nil {
-		fmt.Println("Login", user)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
 		return
 	}
 
 	if user.Username != "user" || user.Password != "password" || user.Email != "email" {
-		fmt.Println("Login", user)
 		token, err := utils.GenerateToken(user.ID, user.Email, user.Username)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
@@ -36,6 +34,12 @@ func Register(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
+		return
+	}
+
+	err := db.CreateUser(user.Username, user.Password, user.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save user"})
 		return
 	}
 
