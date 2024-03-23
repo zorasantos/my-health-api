@@ -4,10 +4,11 @@ import (
 	"github.com/google/uuid"
 )
 
-func GenerateUUID() (string, error) {
+func GenerateUUID() (uuid.UUID, error) {
+	var emptyUUID uuid.UUID
 	uuid, err := uuid.NewRandom()
 	if err != nil {
-		return "", err
+		return emptyUUID, err
 	}
-	return uuid.String(), nil
+	return uuid, nil
 }

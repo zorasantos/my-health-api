@@ -21,10 +21,18 @@ func GenerateToken(userId uuid.UUID, email string, username string) (string, err
 	return token.SignedString(secretKey)
 }
 
+func GenerateTokenEmail() (string, error) {
+	claims := jwt.MapClaims{}
+	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(secretKey)
+}
+
 func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Invalid signing method")
+			return nil, fmt.Errorf("invalid signing method")
 		}
 		return secretKey, nil
 	})
@@ -37,5 +45,5 @@ func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 		return claims, nil
 	}
 
-	return nil, fmt.Errorf("Invalid token")
+	return nil, fmt.Errorf("invalid token")
 }

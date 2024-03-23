@@ -4,16 +4,22 @@ import (
 	"errors"
 	"log"
 
-	"github.com/google/uuid"
+	"github.com/zorasantos/my-health/utils"
 )
 
-func CreateUser(uuid uuid.UUID, username string, password string, email string) error {
+func CreateUser(username string, password string, email string) error {
 	db, err := ConnectDB()
+	userId, _ := utils.GenerateUUID()
+	hashPassword, _ := utils.HashPassword(password)
+	email_token, _ := utils.GenerateTokenEmail()
+	is_verified := false
+	forgot_password_token := ""
 
 	if err != nil {
 		return err
 	}
-	result, err := db.Exec("INSERT INTO users (id, username, password, email) VALUES ($1, $2, $3, $4)", uuid, username, password, email)
+
+	result, err := db.Exec("INSERT INTO users (id, username, password, email, email_token, forgot_password_token, is_verified ) VALUES ($1, $2, $3, $4, $5, $6, $7)", userId, username, hashPassword, email, email_token, forgot_password_token, is_verified)
 
 	if err != nil {
 		logMsgErrorCreate := err.Error()
