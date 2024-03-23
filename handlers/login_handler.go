@@ -44,21 +44,3 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"token": token})
 	}
 }
-
-func Register(c *gin.Context) {
-	var user models.User
-
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
-		return
-	}
-
-	err := db.CreateUser(user.Username, user.Password, user.Email)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
-}

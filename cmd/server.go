@@ -33,7 +33,7 @@ func main() {
 	publicRoutes := r.Group("/public")
 	{
 		publicRoutes.POST("/login", handlers.Login)
-		publicRoutes.POST("/register", handlers.Register)
+		publicRoutes.POST("/user", handlers.CreateUser)
 	}
 
 	privateRoutes := r.Group("/protected")
