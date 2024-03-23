@@ -5,11 +5,12 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 )
 
 var secretKey = []byte("secret_key")
 
-func GenerateToken(userId uint, email string, username string) (string, error) {
+func GenerateToken(userId uuid.UUID, email string, username string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["user_id"] = userId
 	claims["email"] = email

@@ -3,19 +3,20 @@ package db
 import (
 	"errors"
 	"log"
+
+	"github.com/google/uuid"
 )
 
-func CreateUser(username string, password string, email string) error {
+func CreateUser(uuid uuid.UUID, username string, password string, email string) error {
 	db, err := ConnectDB()
 
 	if err != nil {
 		return err
 	}
-
-	result, err := db.Exec("INSERT INTO users (username, password, email) VALUES ($1, $2, $3)", username, password, email)
+	result, err := db.Exec("INSERT INTO users (id, username, password, email) VALUES ($1, $2, $3, $4)", uuid, username, password, email)
 
 	if err != nil {
-		logMsgErrorCreate := "failed to create user" + err.Error()
+		logMsgErrorCreate := err.Error()
 		log.Println(logMsgErrorCreate)
 		return errors.New(logMsgErrorCreate)
 	}

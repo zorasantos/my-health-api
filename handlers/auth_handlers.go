@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/zorasantos/my-health/db"
 	"github.com/zorasantos/my-health/models"
 	"github.com/zorasantos/my-health/utils"
@@ -37,19 +38,27 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Pode ser feito na query de criação do usuário
 	hashPassword, err := utils.HashPassword(user.Password)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
 	}
-
-	err = db.CreateUser(user.Username, hashPassword, user.Email)
+	// Pode ser feito na query de criação do usuário
+	uuid, err := uuid.NewRandom()
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate UUID"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User created"})
+	err = db.CreateUser(uuid, user.Username, hashPassword, user.Email)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
 }
