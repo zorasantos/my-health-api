@@ -17,15 +17,31 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if user.Username != "user" || user.Password != "password" || user.Email != "email" {
-		token, err := utils.GenerateToken(user.ID, user.Email, user.Username)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+	dbUser, err := db.GetUser(user.Email)
+
+	if err != nil {
+		if err.Error() == "error connection db in get user" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"token": token})
-	} else {
+	}
+
+	is_match := utils.ComparePasswords(dbUser.Password, user.Password)
+
+	if is_match != nil || dbUser.Email != user.Email {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	token, err := utils.GenerateToken(dbUser.ID, dbUser.Email, dbUser.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token " + err.Error()})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"token": token})
 	}
 }
 

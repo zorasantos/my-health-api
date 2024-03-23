@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/zorasantos/my-health/models"
 	"github.com/zorasantos/my-health/utils"
 )
 
@@ -36,8 +37,8 @@ func CreateUser(username string, password string, email string) error {
 
 	}
 
-	is_verified := false
-	forgot_password_token := ""
+	var is_verified bool
+	var forgot_password_token string
 
 	result, err := db.Exec("INSERT INTO users (id, username, password, email, email_token, forgot_password_token, is_verified ) VALUES ($1, $2, $3, $4, $5, $6, $7)", userId, username, hashPassword, email, email_token, forgot_password_token, is_verified)
 
@@ -64,5 +65,27 @@ func CreateUser(username string, password string, email string) error {
 
 	defer db.Close()
 
-	return nil
+	return err
+}
+
+func GetUser(email string) (models.User, error) {
+	db, err := ConnectDB()
+
+	var user models.User
+
+	if err != nil {
+		return user, errors.New("error connection db in get user")
+	}
+
+	row := db.QueryRow("SELECT * FROM users WHERE email = $1 LIMIT 1", email)
+
+	err = row.Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.EmailToken, &user.ForgotPasswordToken, &user.IsVerified, &user.CreatedAt, &user.UpdatedAt)
+
+	if err != nil {
+		return user, errors.New("User not found " + err.Error())
+	}
+
+	defer db.Close()
+
+	return user, err
 }
