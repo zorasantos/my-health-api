@@ -5,10 +5,12 @@ import (
 	"fmt"
 
 	_ "github.com/lib/pq"
+	"github.com/zorasantos/my-health/config"
 )
 
 func ConnectDB() (*sql.DB, error) {
-	connStr := "postgresql://zorasantos:0DmNsdgPwkJ7@ep-spring-pine-010036.us-east-2.aws.neon.tech/health?sslmode=require"
+	var connStr = config.GetEnvVars().DBSource
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)

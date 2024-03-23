@@ -1,7 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
+	"github.com/zorasantos/my-health/config"
 	"github.com/zorasantos/my-health/db"
 	"github.com/zorasantos/my-health/handlers"
 	"github.com/zorasantos/my-health/middleware"
@@ -9,7 +12,22 @@ import (
 
 func main() {
 	r := gin.Default()
-	db.ConnectDB()
+
+	_, err := config.LoadConfig(".")
+
+	if err != nil {
+		log.Fatal("Failed to load config " + err.Error())
+	}
+
+	_, errorDB := db.ConnectDB()
+
+	if errorDB != nil {
+		log.Fatal("Failed to connect to database " + errorDB.Error())
+	}
+
+	if errorDB == nil {
+		log.Println("Connected to database successfully")
+	}
 	// r.SetTrustedProxies([]string{"187.58.71.4"})
 
 	publicRoutes := r.Group("/public")
