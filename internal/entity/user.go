@@ -7,15 +7,15 @@ import (
 )
 
 type User struct {
-	ID                  utils.ID `json:"id"`
-	Username            string   `json:"username"`
-	Password            string   `json:"-"`
-	Email               string   `json:"email"`
-	EmailToken          string   `json:"email_token"`
-	ForgotPasswordToken *string  `json:"forgot_password_token"`
-	IsVerified          bool     `json:"is_verified"`
-	CreatedAt           string   `json:"created_at"`
-	UpdatedAt           *string  `json:"updated_at"`
+	ID                  utils.ID   `json:"id"`
+	Username            string     `json:"username"`
+	Password            string     `json:"-"`
+	Email               string     `json:"email"`
+	EmailToken          string     `json:"email_token"`
+	ForgotPasswordToken *string    `json:"forgot_password_token"`
+	IsVerified          bool       `json:"is_verified"`
+	CreatedAt           time.Time  `json:"created_at"`
+	UpdatedAt           *time.Time `json:"updated_at"`
 }
 
 func NewUser(username, password, email string) (*User, error) {
@@ -25,10 +25,10 @@ func NewUser(username, password, email string) (*User, error) {
 		return nil, err
 	}
 
-	email_token, errorEmail := utils.GenerateTokenEmail()
+	email_token, errorTokenEmail := utils.GenerateTokenEmail()
 
-	if errorEmail != nil {
-		return nil, errorEmail
+	if errorTokenEmail != nil {
+		return nil, errorTokenEmail
 	}
 
 	return &User{
@@ -39,7 +39,7 @@ func NewUser(username, password, email string) (*User, error) {
 		EmailToken:          email_token,
 		ForgotPasswordToken: nil,
 		IsVerified:          false,
-		CreatedAt:           time.Now().Format("2006-01-02 15:04:05"),
+		CreatedAt:           time.Now(),
 		UpdatedAt:           nil,
 	}, nil
 }

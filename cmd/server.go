@@ -5,8 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/zorasantos/my-health/config"
-	"github.com/zorasantos/my-health/db"
-	"github.com/zorasantos/my-health/handlers"
+
+	"github.com/zorasantos/my-health/internal/infra/database"
+	"github.com/zorasantos/my-health/internal/infra/handlers"
 	"github.com/zorasantos/my-health/middleware"
 )
 
@@ -19,7 +20,7 @@ func main() {
 		log.Fatal("Failed to load config " + err.Error())
 	}
 
-	_, errorDB := db.ConnectDB()
+	_, errorDB := database.ConnectDB()
 
 	if errorDB != nil {
 		log.Fatal("Failed to connect to database " + errorDB.Error())
