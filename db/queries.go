@@ -15,12 +15,7 @@ func CreateUser(username string, password string, email string) error {
 		return errors.New("error connection db create user " + err.Error())
 	}
 
-	userId, errorUUID := utils.GenerateUUID()
-
-	if errorUUID != nil {
-		log.Println(errorUUID)
-		return errors.New("failed to generate uuid in create user " + errorUUID.Error())
-	}
+	userId := utils.NewID()
 
 	hashPassword, errorHash := utils.HashPassword(password)
 
