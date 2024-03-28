@@ -2,17 +2,20 @@ package main
 
 import (
 	"log"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/zorasantos/my-health/config"
 
 	"github.com/zorasantos/my-health/internal/infra/database"
 	"github.com/zorasantos/my-health/internal/infra/handlers"
-	"github.com/zorasantos/my-health/middleware"
 )
 
 func main() {
-	r := gin.Default()
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.SetHeader("Content-Type", "application/json"))
 
 	_, err := config.LoadConfig(".")
 
@@ -31,18 +34,9 @@ func main() {
 	}
 	// r.SetTrustedProxies([]string{"187.58.71.4"})
 
-	publicRoutes := r.Group("/public")
-	{
-		publicRoutes.POST("/login", handlers.Login)
-		publicRoutes.POST("/user", handlers.CreateUser)
-	}
+	r.Post("/api/v1/login", handlers.Login)
+	r.Post("/api/v1/user", handlers.CreateUser)
 
-	privateRoutes := r.Group("/protected")
-	privateRoutes.Use(middleware.AuthenticationMiddleware())
-	{
-		// privateRoutes.GET("/user", handlers.GetUser)
-	}
-
-	r.Run(":8080")
+	http.ListenAndServe(":8080", r)
 
 }

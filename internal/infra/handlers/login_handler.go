@@ -1,46 +1,53 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/zorasantos/my-health/internal/dto"
 	"github.com/zorasantos/my-health/internal/infra/database"
 	"github.com/zorasantos/my-health/utils"
 )
 
-func Login(ctx *gin.Context) {
+func Login(w http.ResponseWriter, r *http.Request) {
 	var user dto.LoginDTO
 
-	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid data")
 		return
 	}
 
-	dbUser, _ := database.FindByEmail(user.Email)
+	dbUser, err := database.FindByEmail(user.Email)
+	if err != nil {
+		if err.Error() == "error connection db in get user" {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error": "error connection db in get user %s"}`, err.Error())
+			return
+		} else {
+			w.WriteHeader(http.StatusUnauthorized)
+			fmt.Fprintf(w, `{"error": "%s"}`, `Invalid credentials`)
+			return
+		}
+	}
 
-	// if err != nil {
-	// 	if err.Error() == "error connection db in get user" {
-	// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 		return
-	// 	} else {
-	// 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-	// 		return
-	// 	}
-	// }
+	isMatch := utils.ComparePasswords(dbUser.Password, user.Password)
 
-	is_match := utils.ComparePasswords(dbUser.Password, user.Password)
-
-	if is_match != nil || dbUser.Email != user.Email {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+	if isMatch != nil || dbUser.Email != user.Email {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintf(w, `{"error": "%s"}`, `Invalid credentials`)
 		return
 	}
 
 	token, err := utils.GenerateToken(dbUser.ID, dbUser.Email, dbUser.Username)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token " + err.Error()})
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error": "Failed to generate token %s"}`, err.Error())
 		return
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{"token": token})
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"token": "%s"}`, token)
 	}
 }

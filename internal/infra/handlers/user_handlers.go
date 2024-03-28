@@ -1,34 +1,39 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/zorasantos/my-health/internal/dto"
 	"github.com/zorasantos/my-health/internal/entity"
 	"github.com/zorasantos/my-health/internal/infra/database"
 )
 
-func CreateUser(ctx *gin.Context) {
+func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user dto.CreateUserDTO
 
-	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]error{"error": err})
 		return
 	}
 
 	u, err := entity.NewUser(user.Username, user.Password, user.Email)
 
 	if err != nil {
+		json.NewEncoder(w).Encode(map[string]error{"error": err})
 		return
 	}
 
 	err = database.Create(u)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]error{"error": err})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
 }
