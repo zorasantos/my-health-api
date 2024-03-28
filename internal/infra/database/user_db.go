@@ -1,50 +1,42 @@
 package database
 
 import (
-	"errors"
+	"database/sql"
 	"log"
 
 	"github.com/zorasantos/my-health/internal/entity"
 )
 
-func Create(user *entity.User) error {
-	db, err := ConnectDB()
+type User struct {
+	DB *sql.DB
+}
+
+func NewUser(db *sql.DB) *User {
+	return &User{DB: db}
+}
+
+func (u *User) Create(user *entity.User) error {
+	_, err := u.DB.Exec("INSERT INTO users (id, username, password, email, email_token, forgot_password_token, is_verified ) VALUES ($1, $2, $3, $4, $5, $6, $7)", user.ID, user.Username, user.Password, user.Email, user.EmailToken, user.ForgotPasswordToken, user.IsVerified)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Exec("INSERT INTO users (id, username, password, email, email_token, forgot_password_token, is_verified ) VALUES ($1, $2, $3, $4, $5, $6, $7)", user.ID, user.Username, user.Password, user.Email, user.EmailToken, user.ForgotPasswordToken, user.IsVerified)
-
-	if err != nil {
-		return err
-	}
+	defer u.DB.Close()
 
 	log.Println("User created successfully")
-
-	defer db.Close()
 
 	return err
 }
 
-func FindByEmail(email string) (entity.User, error) {
-	db, err := ConnectDB()
-
+func (u *User) FindByEmail(email string) (*entity.User, error) {
 	var user entity.User
 
-	if err != nil {
-		return user, errors.New("error connection db in get user")
-	}
+	row := u.DB.QueryRow("SELECT * FROM users WHERE email = $1 LIMIT 1", email)
 
-	row := db.QueryRow("SELECT * FROM users WHERE email = $1 LIMIT 1", email)
+	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.EmailToken, &user.ForgotPasswordToken, &user.IsVerified, &user.CreatedAt, &user.UpdatedAt)
 
-	err = row.Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.EmailToken, &user.ForgotPasswordToken, &user.IsVerified, &user.CreatedAt, &user.UpdatedAt)
+	defer u.DB.Close()
 
-	if err != nil {
-		return user, errors.New("User not found " + err.Error())
-	}
-
-	defer db.Close()
-
-	return user, err
+	return &user, err
 }

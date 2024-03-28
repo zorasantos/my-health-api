@@ -10,7 +10,15 @@ import (
 	"github.com/zorasantos/my-health/utils"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
+type LoginHandler struct {
+	UserDB database.UserInterface
+}
+
+func UserLoginHandler(db database.UserInterface) *LoginHandler {
+	return &LoginHandler{UserDB: db}
+}
+
+func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var user dto.LoginDTO
 
 	err := json.NewDecoder(r.Body).Decode(&user)
@@ -20,18 +28,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUser, err := database.FindByEmail(user.Email)
-	if err != nil {
-		if err.Error() == "error connection db in get user" {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error": "error connection db in get user %s"}`, err.Error())
-			return
-		} else {
-			w.WriteHeader(http.StatusUnauthorized)
-			fmt.Fprintf(w, `{"error": "%s"}`, `Invalid credentials`)
-			return
-		}
-	}
+	dbUser, _ := h.UserDB.FindByEmail(user.Email)
+
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	json.NewEncoder(w).Encode(map[string]error{"error": err})
+	// 	return
+	// }
 
 	isMatch := utils.ComparePasswords(dbUser.Password, user.Password)
 

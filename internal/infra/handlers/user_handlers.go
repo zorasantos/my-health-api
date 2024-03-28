@@ -9,7 +9,15 @@ import (
 	"github.com/zorasantos/my-health/internal/infra/database"
 )
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+type UserHandler struct {
+	UserDB database.UserInterface
+}
+
+func NewUserHandler(db database.UserInterface) *UserHandler {
+	return &UserHandler{UserDB: db}
+}
+
+func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user dto.CreateUserDTO
 
 	err := json.NewDecoder(r.Body).Decode(&user)
@@ -26,7 +34,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.Create(u)
+	err = h.UserDB.Create(u)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -36,4 +44,5 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "User created successfully"})
+
 }
