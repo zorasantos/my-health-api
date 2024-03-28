@@ -41,6 +41,8 @@ func main() {
 	r.Group(func(r chi.Router) {
 		r.Post("/api/v1/login", loginHandler.Login)
 		r.Post("/api/v1/user", userHandler.CreateUser)
+		r.Get("/api/v1/user/{id}", userHandler.GetUser)
+		r.Patch("/api/v1/user/{id}", userHandler.UpdateUser)
 	})
 
 	fmt.Printf("Starting server on %v\n", addr)

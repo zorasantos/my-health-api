@@ -22,8 +22,6 @@ func (u *User) Create(user *entity.User) error {
 		return err
 	}
 
-	defer u.DB.Close()
-
 	log.Println("User created successfully")
 
 	return err
@@ -36,7 +34,27 @@ func (u *User) FindByEmail(email string) (*entity.User, error) {
 
 	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.EmailToken, &user.ForgotPasswordToken, &user.IsVerified, &user.CreatedAt, &user.UpdatedAt)
 
-	defer u.DB.Close()
+	return &user, err
+}
+
+func (u *User) FindByID(id string) (*entity.User, error) {
+	var user entity.User
+
+	row := u.DB.QueryRow("SELECT * FROM users WHERE id = $1 LIMIT 1", id)
+
+	err := row.Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.EmailToken, &user.ForgotPasswordToken, &user.IsVerified, &user.CreatedAt, &user.UpdatedAt)
 
 	return &user, err
+}
+
+func (u *User) Update(user *entity.User) error {
+	_, err := u.DB.Exec("UPDATE users SET username = $1, updated_at = NOW() WHERE id = $2", user.Username, user.ID)
+
+	if err != nil {
+		return err
+	}
+
+	log.Println("User updated successfully")
+
+	return err
 }

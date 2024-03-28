@@ -10,3 +10,7 @@ type LoginDTO struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type UpdateUserDTO struct {
+	Username string `json:"username"`
+}
