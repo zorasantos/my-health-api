@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -32,7 +33,7 @@ func GenerateTokenEmail() (string, error) {
 }
 
 func VerifyToken(tokenString string) (jwt.MapClaims, error) {
-	var secretKey = config.GetEnvVars().SecretKey
+	var secretKey = []byte(config.GetEnvVars().SecretKey)
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -50,4 +51,9 @@ func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	}
 
 	return nil, fmt.Errorf("invalid token")
+}
+
+func GetUserIDFromJWT(r *http.Request) string {
+	user_id := r.Header.Get("user_id")
+	return user_id
 }

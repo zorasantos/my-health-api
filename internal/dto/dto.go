@@ -6,6 +6,14 @@ type CreateUserDTO struct {
 	Email    string `json:"email"`
 }
 
+type CreateExaminationDTO struct {
+	Name                   string `json:"name"`
+	DoctorName             string `json:"doctor_name"`
+	HospitalMedicalRequest string `json:"hospital_medical_request"`
+	ExaminationDate        string `json:"examination_date"`
+	Notes                  string `json:"notes"`
+}
+
 type LoginDTO struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

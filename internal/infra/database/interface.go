@@ -8,3 +8,7 @@ type UserInterface interface {
 	FindByID(id string) (*entity.User, error)
 	Update(user *entity.User) error
 }
+
+type ExaminationInterface interface {
+	Create(examination *entity.Examination) error
+}
