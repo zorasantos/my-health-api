@@ -10,19 +10,19 @@ import (
 	"github.com/zorasantos/my-health/utils"
 )
 
-type ExaminationHandler struct {
-	ExaminationDB database.ExaminationInterface
+type AppointmentHandler struct {
+	AppointmentDB database.AppointmentInterface
 }
 
-func NewExaminationHandler(db database.ExaminationInterface) *ExaminationHandler {
-	return &ExaminationHandler{ExaminationDB: db}
+func NewAppointmentHandler(db database.AppointmentInterface) *AppointmentHandler {
+	return &AppointmentHandler{AppointmentDB: db}
 }
 
-func (h *ExaminationHandler) CreateExamination(w http.ResponseWriter, r *http.Request) {
-	var examination dto.CreateExaminationDTO
+func (h *AppointmentHandler) CreateAppointment(w http.ResponseWriter, r *http.Request) {
+	var appointment dto.CreateAppointmentDTO
 	user_id := utils.GetUserIDFromJWT(r)
 
-	err := json.NewDecoder(r.Body).Decode(&examination)
+	err := json.NewDecoder(r.Body).Decode(&appointment)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -30,14 +30,14 @@ func (h *ExaminationHandler) CreateExamination(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	e, err := entity.NewExamination(user_id, examination.Name, examination.DoctorName, examination.HospitalMedicalRequest, examination.ExaminationDate, examination.Notes)
+	a, err := entity.NewAppointment(user_id, appointment.DoctorName, appointment.HospitalMedicalRequest, appointment.AppointmentDate, appointment.Specialty, appointment.Notes)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]error{"error": err})
 		return
 	}
 
-	err = h.ExaminationDB.Create(e)
+	err = h.AppointmentDB.Create(a)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -46,6 +46,5 @@ func (h *ExaminationHandler) CreateExamination(w http.ResponseWriter, r *http.Re
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Examination created successfully"})
-
+	json.NewEncoder(w).Encode(map[string]string{"message": "Appointment created successfully"})
 }

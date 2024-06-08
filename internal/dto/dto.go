@@ -14,6 +14,14 @@ type CreateExaminationDTO struct {
 	Notes                  string `json:"notes"`
 }
 
+type CreateAppointmentDTO struct {
+	DoctorName             string `json:"doctor_name"`
+	HospitalMedicalRequest string `json:"hospital_medical_request"`
+	AppointmentDate        string `json:"appointment_date"`
+	Specialty              string `json:"specialty"`
+	Notes                  string `json:"notes"`
+}
+
 type LoginDTO struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
