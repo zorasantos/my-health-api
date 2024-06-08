@@ -16,3 +16,7 @@ type ExaminationInterface interface {
 type AppointmentInterface interface {
 	Create(appointment *entity.Appointment) error
 }
+
+type PrescriptionInterface interface {
+	Create(prescription *entity.Prescription) error
+}

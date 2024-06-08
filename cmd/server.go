@@ -41,11 +41,13 @@ func main() {
 	userDB := database.NewUser(db)
 	examinationDB := database.NewExamination(db)
 	appointmentDB := database.NewAppointment(db)
+	prescriptionDB := database.NewPrescription(db)
 
 	userHandler := handlers.NewUserHandler(userDB)
 	examinationHandler := handlers.NewExaminationHandler(examinationDB)
 	loginHandler := handlers.UserLoginHandler(userDB)
 	appointmentHandler := handlers.NewAppointmentHandler(appointmentDB)
+	prescriptionHandler := handlers.NewPrescriptionHandler(prescriptionDB)
 
 	r.Group(func(r chi.Router) {
 		r.Post("/api/v1/login", loginHandler.Login)
@@ -62,6 +64,11 @@ func main() {
 	r.Group(func(r chi.Router) {
 		r.Use(authMiddleware.AuthenticationMiddleware)
 		r.Post("/api/v1/appointment", appointmentHandler.CreateAppointment)
+	})
+
+	r.Group(func(r chi.Router) {
+		r.Use(authMiddleware.AuthenticationMiddleware)
+		r.Post("/api/v1/prescription", prescriptionHandler.CreatePrescription)
 	})
 
 	fmt.Printf("Starting server on %v\n", addr)
